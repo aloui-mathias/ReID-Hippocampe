@@ -1,1 +1,2 @@
-DATASET_PATH = "../../Dataset/"
+DATASET_PATH = "D:/CEFE/Dataset/"
+CROP_SIZE = 416
