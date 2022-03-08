@@ -2,16 +2,24 @@ def getExt(filename: str) -> str:
     return filename.split(".")[-1]
 
 
+def isCrop(filename: str) -> bool:
+    return getExt(withoutExt(filename)) == "crop"
+
+
 def isCsv(filename: str) -> bool:
     return getExt(filename) == "csv"
 
 
 def isCustom(filename: str) -> bool:
-    return isYolo(filename) or isCrop(filename) or isResize(filename)
+    return isCrop(filename) or isResize(filename) or isYoloImage(filename)
 
 
 def isImage(filename: str) -> bool:
     return getExt(filename).lower() in ["jpg", "jpeg", "png"]
+
+
+def isResize(filename: str) -> bool:
+    return getExt(withoutExt(filename)) == "resize"
 
 
 def isTxt(filename: str) -> bool:
@@ -19,15 +27,11 @@ def isTxt(filename: str) -> bool:
 
 
 def isYolo(filename: str) -> bool:
-    return getExt(withoutExt(filename)) == "yolo"
+    return getExt(filename) == "yolo"
 
 
-def isCrop(filename: str) -> bool:
-    return getExt(withoutExt(filename)) == "crop"
-
-
-def isResize(filename: str) -> bool:
-    return getExt(withoutExt(filename)) == "resize"
+def isYoloImage(filename: str) -> bool:
+    return isImage(filename) and isYolo(withoutExt(filename))
 
 
 def orginalname_to_yoloname(name: str) -> str:

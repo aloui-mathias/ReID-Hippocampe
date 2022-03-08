@@ -6,7 +6,6 @@ from os import (
 )
 from os.path import (
     isdir,
-    isfile,
     join
 )
 from numpy.random import random
@@ -22,6 +21,9 @@ parts = ["train", "val", "test"]
 for part in parts:
     if not isdir(join(environ["SPLIT_PATH"], part)):
         mkdir(join(environ["SPLIT_PATH"], part))
+    else:
+        print("train/val/test folders already exist.")
+        exit()
 
 with open("yolo_dataset.txt", "r") as trainfile:
 

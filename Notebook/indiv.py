@@ -6,22 +6,14 @@ from os import (
 )
 from os.path import (
     isdir,
+    isfile,
     join
 )
 from shutil import copyfile
 from utils import (
-    getExt,
     isImage,
-    withoutExt
+    isResize
 )
-
-
-def isCropImage(filename: str):
-    return getExt(filename) == "resize" and isImage(withoutExt(filename))
-
-
-def isResizeCropImage(filename: str):
-    return getExt(filename) == "crop" and isCropImage(withoutExt(filename))
 
 
 if not isdir(environ["INDIV_PATH"]):
@@ -37,7 +29,7 @@ for indiv in listdir(environ["DATASET_PATH"]):
 
     for filename in listdir(out_path):
         
-        if isResizeCropImage(filename):
+        if isResize(filename) and isImage(filename) and not isfile(join(in_path, filename)):
         
             copyfile(join(out_path, filename), join(in_path, filename))
             
