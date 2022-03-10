@@ -10,24 +10,24 @@ from os.path import (
 )
 from numpy.random import random
 from shutil import copyfile
+from tqdm import tqdm
 from utils import withoutExt
 
 
 if not isdir(environ["SPLIT_PATH"]):
     mkdir(environ["SPLIT_PATH"])
+else:
+    print("split already exists")
+    exit()
 
 parts = ["train", "val", "test"]
 
 for part in parts:
-    if not isdir(join(environ["SPLIT_PATH"], part)):
-        mkdir(join(environ["SPLIT_PATH"], part))
-    else:
-        print("train/val/test folders already exist.")
-        exit()
+    mkdir(join(environ["SPLIT_PATH"], part))
 
 with open("yolo_dataset.txt", "r") as trainfile:
 
-    for line in trainfile.read().splitlines():
+    for line in tqdm(trainfile.read().splitlines()):
 
         line = line.split("/")
         indiv = line[0]

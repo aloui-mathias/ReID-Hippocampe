@@ -34,18 +34,29 @@ def isYoloImage(filename: str) -> bool:
     return isImage(filename) and isYolo(withoutExt(filename))
 
 
-def orginalname_to_yoloname(name: str) -> str:
+def originalname_to_cropname(name: str) -> str:
+    name = originalname_to_customname(name)
+    name += ".crop.jpg"
+    return name
+
+
+def originalname_to_cropresizename(name: str) -> str:
+    name = originalname_to_customname(name)
+    name += ".crop.resize.jpg"
+    return name
+
+
+def originalname_to_customname(name: str) -> str:
     name = name.replace('©', '@')
     name = name.replace(' ', '_')
+    return name
+
+
+def originalname_to_yoloname(name: str) -> str:
+    name = originalname_to_customname(name)
     name += ".yolo.jpg"
     return name
 
 
 def withoutExt(filename: str) -> str:
     return ".".join(filename.split(".")[:-1])
-
-
-def yoloname_to_originalname(name: str) -> str:
-    name = name.replace('@', '©')
-    name = name.replace('_', ' ')
-    return withoutExt(withoutExt(name))
