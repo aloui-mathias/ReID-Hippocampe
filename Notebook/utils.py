@@ -1,3 +1,13 @@
+from os.path import join
+from shutil import copyfile
+from typing import List, Optional
+
+
+def copyfiles(files: List[str], out_path: str, in_path: str) -> None:
+    for filename in files:
+        copyfile(join(out_path, filename), join(in_path, filename))
+
+
 def getExt(filename: str) -> str:
     return filename.split(".")[-1]
 
@@ -18,8 +28,10 @@ def isImage(filename: str) -> bool:
     return getExt(filename).lower() in ["jpg", "jpeg", "png"]
 
 
-def isResize(filename: str) -> bool:
-    return getExt(withoutExt(filename)) == "resize"
+def isResize(filename: str, size: Optional[int] = None) -> bool:
+    if size:
+        return getExt(withoutExt(filename)) == f"resize{size}"
+    return "resize" in getExt(withoutExt(filename))
 
 
 def isTxt(filename: str) -> bool:
@@ -40,9 +52,12 @@ def originalname_to_cropname(name: str) -> str:
     return name
 
 
-def originalname_to_cropresizename(name: str) -> str:
+def originalname_to_cropresizename(name: str, size: int) -> str:
     name = originalname_to_customname(name)
-    name += ".crop.resize.jpg"
+    name += ".crop.resize"
+    if size:
+        name += f"{size}"
+    name += ".jpg"
     return name
 
 
