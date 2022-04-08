@@ -16,9 +16,21 @@ detect(opt)
 
 crop_path = imageToCropPath(opt.source)
 
-print(profil(crop_path))
+profil_score = profil(crop_path)
 
-print(reid(crop_path))
+reid_score = reid(crop_path)
+
+
+with open("result.txt", "w") as file:
+
+    if profil_score < 0.45:
+        file.write(f"Profil gauche : {profil_score[0][0]}\n")
+    elif profil_score > 0.55:
+        file.write(f"Profil droit : {profil_score[0][0]}\n")
+    else:
+        file.write(f"Profil indéterminé : {profil_score[0][0]}\n")
+
+    file.write(f"Encodage de l'image : {reid_score[0]}\n")
 
 input()
 

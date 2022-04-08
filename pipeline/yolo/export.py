@@ -44,7 +44,7 @@ TensorFlow.js:
 
 from yolo.utils.torch_utils import select_device
 from yolo.utils.general import (LOGGER, check_dataset, check_img_size, check_requirements, check_version, colorstr,
-                           file_size, print_args, url2file)
+                                file_size, print_args, url2file)
 from yolo.utils.datasets import LoadImages
 from yolo.utils.activations import SiLU
 from yolo.models.yolo import Detect
@@ -629,7 +629,6 @@ def parse_opt():
                         default=['torchscript', 'onnx'],
                         help='torchscript, onnx, openvino, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs')
     opt = parser.parse_args()
-    print_args(FILE.stem, opt)
     return opt
 
 

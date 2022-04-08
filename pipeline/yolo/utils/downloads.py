@@ -28,10 +28,6 @@ def attempt_download(file, repo='ultralytics/yolov5'):
             url = str(file).replace(':/', '://')  # Pathlib turns :// -> :/
             # parse authentication https://url.com/file.txt?auth...
             file = name.split('?')[0]
-            if Path(file).is_file():
-                print(f'Found {url} locally at {file}')  # file already exists
-            else:
-                safe_download(file=file, url=url, min_bytes=1E5)
             return file
 
         # GitHub assets

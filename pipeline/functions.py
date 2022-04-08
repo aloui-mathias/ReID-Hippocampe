@@ -1,5 +1,5 @@
 from config import *
-from os import environ, mkdir
+from os import devnull, environ, mkdir
 from os.path import isdir, join, split
 from shutil import copyfile, rmtree
 
