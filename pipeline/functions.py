@@ -26,7 +26,7 @@ def copyImageToTempFolder(image_path: str) -> str:
 def fixYolov5():
 
     filepath = join(environ["ENV_PATH"],
-                    "lib/site-packages/torch/nn/modules/upsampling.py")
+                    "torch/nn/modules/upsampling.py")
 
     # Read in the file
     with open(filepath, 'r') as file:
