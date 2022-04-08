@@ -11,7 +11,7 @@ from os.path import (
 import random
 import sys
 from tqdm import tqdm
-from utils import (
+from .utils import (
     copyfiles,
     isImage,
     isResize

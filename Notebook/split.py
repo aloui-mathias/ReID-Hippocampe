@@ -11,7 +11,7 @@ from os.path import (
 from numpy.random import random
 from shutil import copyfile
 from tqdm import tqdm
-from utils import withoutExt
+from .utils import withoutExt
 
 
 if not isdir(environ["SPLIT_PATH"]):
