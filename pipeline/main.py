@@ -1,4 +1,5 @@
 from functions import cleanTempFolder, copyImageToTempFolder, imageToCropPath
+from numpy import log10
 from profil.classification import main as profil
 from ReID.reid import main as reid
 from yolo.detect import main as detect
@@ -16,21 +17,31 @@ detect(opt)
 
 crop_path = imageToCropPath(opt.source)
 
-profil_score = profil(crop_path)
+profil_score = profil(crop_path)[0][0]
 
-reid_score = reid(crop_path)
+reid_score = reid(crop_path)[0]
 
 
 with open("result.txt", "w") as file:
 
-    if profil_score < 0.45:
-        file.write(f"Profil gauche : {profil_score[0][0]}\n")
-    elif profil_score > 0.55:
-        file.write(f"Profil droit : {profil_score[0][0]}\n")
-    else:
-        file.write(f"Profil indéterminé : {profil_score[0][0]}\n")
+    file.write("Profil :\n")
+    file.write(f"score = {profil_score}\n")
+    file.write("prediction = ")
 
-    file.write(f"Encodage de l'image : {reid_score[0]}\n")
+    if profil_score < 0.5:
+        proba = log10(2-2*profil_score)*100/log10(2)
+        file.write("Gauche\n")
+    elif profil_score > 0.5:
+        proba = log10(2*profil_score)*100/log10(2)
+        file.write("Droit\n")
+    else:
+        file.write("Indetermine\n")
+
+    if profil_score != 0.5:
+        file.write(f"probabilite = {proba}%\n")
+
+    file.write("ReID :\n")
+    file.write(f"{reid_score}\n")
 
 input()
 
