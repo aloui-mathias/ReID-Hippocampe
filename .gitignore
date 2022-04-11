@@ -130,5 +130,3 @@ dmypy.json
 
 # Custom
 yolov5/
-
-pipeline/result.txt
