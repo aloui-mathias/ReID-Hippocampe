@@ -1,13 +1,11 @@
 from config import *
 from functions import (
-    cleanTempFolder,
     isImage,
     originalname_to_customname
 )
 from os import (
     environ,
-    listdir,
-    mkdir
+    listdir
 )
 from os.path import (
     isdir,
@@ -15,15 +13,15 @@ from os.path import (
     join
 )
 import pandas as pd
-from profil.classification import main as profil
-from ReID.reid import main as reid
-from shutil import copyfile
+from profil.classification import model as profilModel
+from ReID.reid import model as reidModel
 from tqdm import tqdm
 
 
 DB_PATH = environ["DB_PATH"]
 DATASET_PATH = environ["DATASET_PATH"]
-SIZES = environ["CROP_SIZES"].split(" ")
+# SIZES = environ["CROP_SIZES"].split(" ")
+SIZES = ["300", "380", "456"]
 REMAKE = True
 project = environ["TEMP_FOLDER"]
 
@@ -38,14 +36,15 @@ for indiv in listdir(DB_PATH):
 
     paths[indiv] = images
 
-for size in SIZES[:4]:
+profil_model = profilModel()
+
+for size in SIZES:
 
     print(size)
 
+    reid_model = reidModel(size=size)
+
     for indiv, images in tqdm(paths.items()):
-        if isdir(environ["TEMP_FOLDER"]):
-            cleanTempFolder()
-        mkdir(environ["TEMP_FOLDER"])
         csv_path = join(DB_PATH, indiv, indiv + "." + size + ".csv")
 
         if not isfile(csv_path):
@@ -60,14 +59,10 @@ for size in SIZES[:4]:
                 new_images.append(image)
                 crop_name = originalname_to_customname(image)
                 crop_name += ".crop.jpg"
-                copyfile(
-                    join(DATASET_PATH, indiv, crop_name),
-                    join(environ["TEMP_FOLDER"], crop_name)
-                )
-                new_paths.append(join(environ["TEMP_FOLDER"], crop_name))
+                new_paths.append(join(DATASET_PATH, indiv, crop_name))
 
-        new_embeddings = reid(new_paths, size=size)
-        new_profils = profil(new_paths)
+        new_embeddings = reid_model.predict(new_paths)
+        new_profils = profil_model.predict(new_paths)
 
         if len(new_images) != 0 or REMAKE:
             new_df = pd.DataFrame(
@@ -82,5 +77,3 @@ for size in SIZES[:4]:
             else:
                 df = pd.concat([df, new_df])
             df.to_csv(csv_path, index=False)
-
-cleanTempFolder()
