@@ -48,6 +48,15 @@ def getExt(filename: str) -> str:
     return filename.split(".")[-1]
 
 
+def originalname_to_cropresizename(name: str, size: int) -> str:
+    name = originalname_to_customname(name)
+    name += ".crop.resize"
+    if size:
+        name += f"{size}"
+    name += ".jpg"
+    return name
+
+
 def originalname_to_customname(name: str) -> str:
     name = name.replace('©', '@')
     name = name.replace(' ', '_')

@@ -25,7 +25,7 @@ def main(img_path: str = "D:/CEFE/Dataset/BF001/" +
 
     reid_score = reid([crop_path])[0]
 
-    with open("result.txt", "w") as file:
+    with open("pipeline.result.txt", "w") as file:
 
         file.write("Profil :\n")
         file.write(f"score = {profil_score}\n")
