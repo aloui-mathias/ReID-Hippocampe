@@ -6,43 +6,52 @@ from yolo.detect import main as detect
 from yolo.detect import parse_opt
 
 
-opt = parse_opt()
+def main(img_path: str = "D:/CEFE/Dataset/BF001/" +
+         "BF001_2021 ©P.Louisy 200608 DSC_0716.JPG",
+         stop: bool = False):
 
-if not opt.source:
-    opt.source = "D:/CEFE/Dataset/BF001/BF001_2021 ©P.Louisy 200608 DSC_0716.JPG"
+    opt = parse_opt()
 
-opt.source = copyImageToTempFolder(opt.source)
+    if not opt.source:
+        opt.source = img_path
 
-detect(opt)
+    opt.source = copyImageToTempFolder(opt.source)
 
-crop_path = imageToCropPath(opt.source)
+    detect(opt)
 
-profil_score = profil(crop_path)[0][0]
+    crop_path = imageToCropPath(opt.source)
 
-reid_score = reid(crop_path)[0]
+    profil_score = profil([crop_path])[0]
+
+    reid_score = reid([crop_path])[0]
+
+    with open("result.txt", "w") as file:
+
+        file.write("Profil :\n")
+        file.write(f"score = {profil_score}\n")
+        file.write("prediction = ")
+        if profil_score < 0.5:
+            proba = log10(2-2*profil_score)*100/log10(2)
+            file.write("Gauche\n")
+        elif profil_score > 0.5:
+            proba = log10(2*profil_score)*100/log10(2)
+            file.write("Droit\n")
+        else:
+            file.write("Indetermine\n")
+
+        if profil_score != 0.5:
+            file.write(f"probabilite = {proba}%\n")
+
+        file.write("ReID :\n")
+        file.write(f"{reid_score}\n")
+
+    if stop:
+        input()
+
+    cleanTempFolder()
+
+    return [reid_score, profil_score]
 
 
-with open("result.txt", "w") as file:
-
-    file.write("Profil :\n")
-    file.write(f"score = {profil_score}\n")
-    file.write("prediction = ")
-
-    if profil_score < 0.5:
-        proba = log10(2-2*profil_score)*100/log10(2)
-        file.write("Gauche\n")
-    elif profil_score > 0.5:
-        proba = log10(2*profil_score)*100/log10(2)
-        file.write("Droit\n")
-    else:
-        file.write("Indetermine\n")
-
-    if profil_score != 0.5:
-        file.write(f"probabilite = {proba}%\n")
-
-    file.write("ReID :\n")
-    file.write(f"{reid_score}\n")
-
-input()
-
-cleanTempFolder()
+if __name__ == "__main__":
+    main(stop=True)

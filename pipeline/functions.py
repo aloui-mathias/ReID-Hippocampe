@@ -1,5 +1,5 @@
 from config import *
-from os import devnull, environ, mkdir
+from os import environ, mkdir
 from os.path import isdir, join, split
 from shutil import copyfile, rmtree
 
@@ -44,6 +44,10 @@ def fixYolov5():
         file.write(filedata)
 
 
+def getExt(filename: str) -> str:
+    return filename.split(".")[-1]
+
+
 def originalname_to_customname(name: str) -> str:
     name = name.replace('©', '@')
     name = name.replace(' ', '_')
@@ -53,3 +57,7 @@ def originalname_to_customname(name: str) -> str:
 def imageToCropPath(image_path: str) -> str:
     path, image_name = split(image_path)
     return join(path, "yolo", image_name)
+
+
+def isImage(filename: str) -> bool:
+    return getExt(filename).lower() in ["jpg", "jpeg", "png"]

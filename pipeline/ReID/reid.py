@@ -17,19 +17,30 @@ from tensorflow.keras.applications import (
 )
 
 
-def main(image_path: str):
+def main(image_paths: str, size: str = None):
 
-    SIZE = (int)(environ["INPUT_SIZE"])
+    if not size:
+        SIZE = (int)(environ["INPUT_SIZE"])
+        WEIGHTS = environ["WEIGHTS"]
+    else:
+        SIZE = (int)(size)
+        WEIGHTS = environ["WEIGHTS_PATH"] + str(SIZE) + ".h5"
     DIM = (int)(environ["EMBEDDING"])
-    WEIGHTS = environ["WEIGHTS"]
     
-    img = Image.open(image_path)
-    img = np.array(img)
     
-    resize = iaa.Resize({"longer-side": SIZE, "shorter-side": "keep-aspect-ratio"})
-    padding = iaa.PadToSquare(pad_mode="constant", pad_cval=0, position="center")
+    imgs = []
     
-    img = padding(image=resize(image=img)).reshape((1,SIZE,SIZE,3))
+    for image_path in image_paths:
+        
+        img = Image.open(image_path)
+        img = np.array(img)
+        
+        resize = iaa.Resize({"longer-side": SIZE, "shorter-side": "keep-aspect-ratio"})
+        padding = iaa.PadToSquare(pad_mode="constant", pad_cval=0, position="center")
+        
+        img = padding(image=resize(image=img)).reshape((1,SIZE,SIZE,3))
+        
+        imgs.append(img)
     
     if SIZE == 224:
         premodel = EfficientNetB0(
@@ -108,7 +119,13 @@ def main(image_path: str):
     model = embedding_model(premodel)
     
     model.load_weights(WEIGHTS)
+    
+    preds = []
+    
+    for img in imgs:
+        pred = model.predict(img)
+        preds.append(pred[0])
 
-    return model.predict(img)
+    return preds
     
     

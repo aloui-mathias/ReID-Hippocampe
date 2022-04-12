@@ -23,8 +23,18 @@ VID_FORMATS = ['asf', 'avi', 'gif', 'm4v', 'mkv', 'mov',
 class LoadImages:
     # YOLOv5 image/video dataloader, i.e. `python detect.py --source image.jpg/vid.mp4`
     def __init__(self, path, img_size=640, stride=32, auto=True):
-        p = str(Path(path).resolve())  # os-agnostic absolute path
-        if '*' in p:
+        if type(path) is not list:
+            p = str(Path(path).resolve())  # os-agnostic absolute path
+        else:
+            p = path
+        if type(p) is list:
+            files = []
+            for file in p:
+                if not os.path.isfile(file):
+                    raise Exception(f'ERROR: {file} does not exist')
+                else:
+                    files.append(file)
+        elif '*' in p:
             files = sorted(glob.glob(p, recursive=True))  # glob
         elif os.path.isdir(p):
             files = sorted(glob.glob(os.path.join(p, '*.*')))  # dir
