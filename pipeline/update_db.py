@@ -21,7 +21,7 @@ from tqdm import tqdm
 DB_PATH = environ["DB_PATH"]
 DATASET_PATH = environ["DATASET_PATH"]
 # SIZES = environ["CROP_SIZES"].split(" ")
-SIZES = ["300", "380", "456"]
+SIZES = ["380", "456", "528"]
 REMAKE = True
 project = environ["TEMP_FOLDER"]
 
