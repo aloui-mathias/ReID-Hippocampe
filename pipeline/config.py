@@ -1,8 +1,9 @@
 from os import environ
 
 
+# A garder pour préciser pas de GPU compatible
 environ["CUDA_VISIBLE_DEVICES"] = "-1"
-environ["EMBEDDING"] = "128"
+environ["EMBEDDING"] = "256"
 environ["ENV_PATH"] = "D:/Programmes/anaconda/envs/pipeline/Lib/site-packages"
 environ["INPUT_SIZE"] = "224"
 environ["PROFIL_SIZE"] = "224"
@@ -13,6 +14,6 @@ environ["WEIGHTS_PATH"] = "ReID/weights/"
 environ["YOLO_WEIGHTS"] = "yolo/weights/best.pt"
 environ["YOLO_YAML"] = "yolo/hippo.yaml"
 environ["DB_PATH"] = "D:\\CEFE\DB"
-environ["CROP_SIZES"] = "224 240 260 300 380 456 528 600"
+environ["CROP_SIZES"] = "224 240 260 300 380 456 528"
 environ["DATASET_PATH"] = "D:\\CEFE\\Dataset"
 environ["INDIV_PATH"] = "D:\\CEFE\\indiv"

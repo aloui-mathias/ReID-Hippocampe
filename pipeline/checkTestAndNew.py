@@ -13,6 +13,7 @@ from sys import argv
 from tqdm import tqdm
 
 SIZE = argv[1]
+NAME = argv[2]
 DB_PATH = environ["DB_PATH"]
 INDIV_PATH = environ["INDIV_PATH"]
 

@@ -19,13 +19,16 @@ from tensorflow.keras.applications import (
 
 class model:
     
-    def __init__(self, size: str = None) -> None:
+    def __init__(self, size: str = None, name: str = None) -> None:
         if not size:
             self.SIZE = (int)(environ["INPUT_SIZE"])
             WEIGHTS = environ["WEIGHTS"]
-        else:
+        elif not name:
             self.SIZE = (int)(size)
             WEIGHTS = environ["WEIGHTS_PATH"] + str(self.SIZE) + ".h5"
+        else :
+            self.SIZE = (int)(size)
+            WEIGHTS = environ["WEIGHTS_PATH"] + str(self.SIZE) + name + ".h5"
         DIM = (int)(environ["EMBEDDING"])
         
         if self.SIZE == 224:
