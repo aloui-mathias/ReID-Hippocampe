@@ -11,12 +11,21 @@ import pandas as pd
 from sys import argv
 
 
-SIZE = (int)(argv[1])
-NAME = argv[2]
+if len(argv) < 2 or len(argv) > 3:
+    print("Not enough or too many argv")
+if len(argv) >= 2:
+    SIZE = (int)(argv[1])
+    NAME = None
+if len(argv) == 3:
+    NAME = argv[2]
 DB_PATH = environ["DB_PATH"]
 
+if not NAME:
+    filename = f'evaluate.{SIZE}.txt'
+else:
+    filename = f'evaluate.{SIZE}{NAME}.txt'
 
-with open(f'evaluate.{SIZE}{NAME}.txt', 'w') as f:
+with open(filename, 'w') as f:
     with redirect_stdout(f):
 
         embeddings_train = []
@@ -36,10 +45,18 @@ with open(f'evaluate.{SIZE}{NAME}.txt', 'w') as f:
         names_new = []
 
         for indiv in listdir(DB_PATH):
-            csv_path = join(
-                DB_PATH, indiv,
-                ".".join([indiv, str(SIZE), "csv"])
-            )
+
+            if not NAME:
+                csv_path = join(
+                    DB_PATH, indiv,
+                    ".".join([indiv, str(SIZE), "csv"])
+                )
+            else:
+                csv_path = join(
+                    DB_PATH, indiv,
+                    ".".join([indiv, str(SIZE) + NAME, "csv"])
+                )
+
             df = pd.read_csv(
                 csv_path,
                 dtype={"image": str, "profil": float},

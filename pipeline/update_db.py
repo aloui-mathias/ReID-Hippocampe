@@ -21,7 +21,7 @@ from tqdm import tqdm
 DB_PATH = environ["DB_PATH"]
 DATASET_PATH = environ["DATASET_PATH"]
 if len(argv) > 3 or len(argv) == 1:
-    print("Not enough or too much argv")
+    print("Not enough or too many argv")
     exit()
 if len(argv) >= 2:
     SIZE = (int)(argv[1])

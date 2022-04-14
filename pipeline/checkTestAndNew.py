@@ -12,8 +12,13 @@ from pandas import read_csv
 from sys import argv
 from tqdm import tqdm
 
-SIZE = argv[1]
-NAME = argv[2]
+if len(argv) < 2 or len(argv) > 3:
+    print("Not enough or too many argv")
+if len(argv) >= 2:
+    SIZE = argv[1]
+    NAME = None
+if len(argv) == 3:
+    NAME = argv[2]
 DB_PATH = environ["DB_PATH"]
 INDIV_PATH = environ["INDIV_PATH"]
 
@@ -26,11 +31,18 @@ for indiv in tqdm(listdir(DB_PATH)):
     else:
         new = 1
         train = []
-    csv_path = join(
-        DB_PATH,
-        indiv,
-        ".".join([indiv, SIZE, "csv"])
-    )
+    if not NAME:
+        csv_path = join(
+            DB_PATH,
+            indiv,
+            ".".join([indiv, SIZE, "csv"])
+        )
+    else:
+        csv_path = join(
+            DB_PATH,
+            indiv,
+            ".".join([indiv, SIZE + NAME, "csv"])
+        )
     df = read_csv(csv_path)
 
     for idx in df.index:
