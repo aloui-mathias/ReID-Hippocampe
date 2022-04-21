@@ -27,6 +27,8 @@ if len(argv) >= 2:
     SIZE = (int)(argv[1])
 if len(argv) == 3:
     NAME = argv[2]
+else:
+    NAME = None
 REMAKE = True
 
 paths = {}

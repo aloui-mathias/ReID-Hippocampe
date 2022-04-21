@@ -3,7 +3,7 @@ from os import environ
 
 # A garder pour préciser pas de GPU compatible
 environ["CUDA_VISIBLE_DEVICES"] = "-1"
-environ["EMBEDDING"] = "256"
+environ["EMBEDDING"] = "128"
 environ["ENV_PATH"] = "D:/Programmes/anaconda/envs/pipeline/Lib/site-packages"
 environ["INPUT_SIZE"] = "224"
 environ["PROFIL_SIZE"] = "224"
