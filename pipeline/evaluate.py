@@ -96,19 +96,19 @@ with open(filename, 'w') as f:
 
         embeddings_test = np.array(embeddings_test)
         labels_test = np.array(labels_test)
-        lables_profil_test = np.array(labels_profil_test)
+        labels_profil_test = np.array(labels_profil_test)
         names_test = np .array(names_test)
 
         embeddings_train = np.array(embeddings_train)
         labels_train = np.array(labels_train)
-        lables_profil_train = np.array(labels_profil_train)
+        labels_profil_train = np.array(labels_profil_train)
         names_train = np .array(names_train)
 
         embeddings_new = np.array(embeddings_new)
         labels_new = np.array(labels_new)
-        lables_profil_new = np.array(labels_profil_new)
+        labels_profil_new = np.array(labels_profil_new)
         names_new = np .array(names_new)
 
         eval = evaluator(nb=10)
         eval.fit(embeddings_train, labels_train)
-        eval.eval(embeddings_test, labels_test, names_test)
+        eval.evalProfils(embeddings_test, labels_profil_test, names_test)
