@@ -1,6 +1,8 @@
+from datetime import date as Date
 from os.path import join
 from shutil import copyfile
 from typing import List, Optional
+from win32com.client import Dispatch
 
 
 def copyfiles(files: List[str], out_path: str, in_path: str) -> None:
@@ -10,6 +12,31 @@ def copyfiles(files: List[str], out_path: str, in_path: str) -> None:
 
 def getExt(filename: str) -> str:
     return filename.split(".")[-1]
+
+
+def get_date(path, image_name):
+    details = get_details(path, image_name)
+    full_date = details["Prise de vue"]
+    if full_date == "":
+        return Date(1, 1, 1)
+    date = full_date.split()[0].split('/')
+    date = list(map(only_numerics, date))
+    date = list(map(int, date))
+    date = Date(date[2], date[1], date[0])
+    return date
+
+
+def get_details(path, image_name):
+    shell = Dispatch("Shell.Application")
+    _dict = {}
+    ns = shell.NameSpace(path)
+    for i in ns.Items():
+        # Check here with the specific filename
+        if str(i) == withoutExt(image_name):
+            for j in range(0, 49):
+                _dict[ns.GetDetailsOf(j, j)] = ns.GetDetailsOf(i, j)
+
+    return _dict
 
 
 def isCrop(filename: str) -> bool:
@@ -44,6 +71,10 @@ def isYolo(filename: str) -> bool:
 
 def isYoloImage(filename: str) -> bool:
     return isImage(filename) and isYolo(withoutExt(filename))
+
+
+def only_numerics(seq):
+    return "".join(filter(str.isdigit, seq))
 
 
 def originalname_to_cropname(name: str) -> str:

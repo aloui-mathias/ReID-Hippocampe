@@ -1,10 +1,13 @@
-import os
+from os import environ
 
 
-os.environ["DATASET_PATH"] = "D:\\CEFE\\Dataset"
-os.environ["INDIV_PATH"] = "D:\\CEFE\\indiv"
-os.environ["SPLIT_PATH"] = "D:\\CEFE\\split"
-os.environ["PROFIL_PATH"] = "D:\\CEFE\\profil"
+environ["DATASET_PATH"] = "D:\\CEFE\\Dataset"
+environ["INDIV_PATH"] = "D:\\CEFE\\indiv"
+environ["SPLIT_PATH"] = "D:\\CEFE\\split"
+environ["PROFIL_PATH"] = "D:\\CEFE\\profil"
+environ["MODELS_PATH"] = "D:\\CEFE\\save_models"
+environ["DB_PATH"] = "D:\\CEFE\DB"
+environ["SPLIT_DATE_PROFIL_PATH"] = "D:\\CEFE\\sdp"
 
-os.environ["YOLO_SIZE"] = "416"
-os.environ["CROP_SIZES"] = "224 240 260 300 380 456 528 600"
+environ["YOLO_SIZE"] = "416"
+environ["CROP_SIZES"] = "224 240 260 300 380 456 528"
