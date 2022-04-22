@@ -4,15 +4,21 @@ from kerasgen.balanced_image_dataset import balanced_image_dataset_from_director
 from matplotlib import pyplot as plt
 from models import Models
 import numpy as np
-from os import mkdir
+from os import (
+    listdir,
+    mkdir
+)
 from os.path import (
     isfile,
     join
 )
 import pandas as pd
+from PIL import Image
+from sklearn.neighbors import NearestNeighbors
 import tensorflow as tf
 from tensorflow import keras
 import tensorflow_addons as tfa
+from tqdm import tqdm
 
 
 # Fix imgaug color change
@@ -90,7 +96,46 @@ def plot(history, path):
 
 
 def eval(model, eval_disance, test_path):
-    return [-1, -1, -1, -1, -1], [-1, -1, -1, -1, -1]
+    x = []
+    y = []
+    for indiv in listdir(test_path):
+        for pic_name in listdir(join(test_path, indiv)):
+            img = Image.open(join(test_path, indiv, pic_name))
+            img = np.array(img)
+            x.append(model.predict(img))
+            y.append(indiv)
+    neighbors = NearestNeighbors(n_neighbors=5,
+                                 metric=eval_disance)
+    neighbors.fit(x, y)
+    sum_cmcks = np.zeros(shape=(5))
+    sum_APks = np.zeros(shape=(5))
+    for label in tqdm(np.unique(y)):
+        indices = np.where(y == label)[0]
+        x_label = x[indices]
+        neighbors = np.array(
+            neighbors.kneighbors(x_label))
+        neighbors_labels = y[
+            neighbors[1, :, :].astype(int)]
+        cmcks = []
+        APks = []
+        for labels in neighbors_labels:
+            cmck = np.zeros(shape=(5))
+            APk = np.zeros(shape=(5))
+            for i in range(5):
+                if label == labels[i]:
+                    for j in range(i, 5):
+                        APk[j] = 1/(i+1)
+                        cmck[j] = 1
+                    break
+            cmcks.append(cmck)
+            APks.append(APk)
+        sum_cmck = np.sum(cmcks, axis=0)
+        sum_APk = np.sum(APks, axis=0)
+        sum_cmcks += sum_cmck
+        sum_APks += sum_APk
+    mean_cmcks = sum_cmcks / len(x)
+    mAPs = sum_APks / len(x)
+    return mean_cmcks, mAPs
 
 
 def evals(model, test_path):
