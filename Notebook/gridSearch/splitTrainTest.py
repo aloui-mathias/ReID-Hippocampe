@@ -1,7 +1,7 @@
 import os
 import shutil
 
-PATH = "D:\CEFE\indiv"
+PATH = "/home/data/indiv"
 
 train = []
 test = []

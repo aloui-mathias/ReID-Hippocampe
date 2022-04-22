@@ -1,6 +1,9 @@
+import imgaug as ia
+from imgaug import augmenters as iaa 
 from kerasgen.balanced_image_dataset import balanced_image_dataset_from_directory
 from matplotlib import pyplot as plt
 from models import Models
+import numpy as np
 from os import mkdir
 from os.path import (
     isfile,
@@ -15,7 +18,7 @@ import tensorflow_addons as tfa
 # Fix imgaug color change
 
 
-filepath = "D:\\Programmes\\anaconda\\envs\\pipeline\\Lib\\site-packages\\imgaug\\augmenters\\color.py"
+filepath = "/home/data/.conda/envs/pipeline/lib/python3.8/site-packages/imgaug/augmenters/color.py"
 
 with open(filepath, 'r') as file:
     filedata = file.read()
@@ -30,9 +33,9 @@ with open(filepath, 'w') as file:
 # Set the fix variables between models
 
 EMBEDDING_SIZE = 128
-NUM_CLASSES_PER_BATCH = 15
+NUM_CLASSES_PER_BATCH = 3
 NUM_IMAGES_PER_CLASSE = 10
-DATASET_PATH = "D:\CEFE\indiv"
+DATASET_PATH = "/home/data/indiv"
 
 
 # Function to train and evaluate a model
@@ -58,7 +61,7 @@ def train(premodel, dropout, triplet_distance, train_ds, val_ds, path):
 
     model.compile(
         optimizer=tf.keras.optimizers.Adam(),
-        loss=tfa.losses.TripletSemiHardLoss()
+        loss=tfa.losses.TripletSemiHardLoss(distance_metric=triplet_distance)
     )
 
     es = keras.callbacks.EarlyStopping(
@@ -86,7 +89,7 @@ def plot(history, path):
     plt.savefig(join(path, "plot.png"))
 
 
-def eval(model, eval_disance):
+def eval(model, eval_disance, test_path):
     return [-1, -1, -1, -1, -1], [-1, -1, -1, -1, -1]
 
 
@@ -94,7 +97,7 @@ def evals(model, test_path):
     CMCks = []
     mAPks = []
     for eval_distance in ["l2", "euclidean", "cosine"]:
-        CMCk, mAPk = eval(model, eval_distance)
+        CMCk, mAPk = eval(model, eval_distance, test_path)
         CMCks.append(CMCk)
         mAPks.append(mAPk)
     return ["l2", "euclidean", "cosine"], CMCks, mAPks
@@ -106,7 +109,7 @@ def search(
 
     premodel = Models.getModel(model_name)
 
-    path = ".".join([model_name, dropout, triplet_distance])
+    path = ".".join([model_name, str(dropout), triplet_distance])
 
     mkdir(path)
 
@@ -142,9 +145,51 @@ else:
     results = pd.read_csv("results.csv")
 
 
+# Augmentations
+
+
+sometimes = lambda aug: iaa.Sometimes(0.5, aug)
+
+class MyParameter(ia.parameters.StochasticParameter):
+    
+    def __init__(self, lb, ub, mid):
+        self.lb = lb
+        self.ub = ub
+        self.mid = mid
+
+    def _draw_samples(self, size, random_state):
+        samples = []
+        for i in range(size[0]):
+            if np.random.random() < 0.5:
+                samples.append(np.random.uniform(self.lb, self.mid))
+            else:
+                samples.append(np.random.uniform(self.mid, self.ub))
+        return np.array(samples).reshape(size)
+
+seq = iaa.Sequential(
+    [
+        sometimes(iaa.Salt((0.001, 0.05))),
+        iaa.Rotate((-180,180)),
+        sometimes(iaa.AverageBlur(k=(2,3))),
+        sometimes(iaa.ChangeColorTemperature(MyParameter(4000, 20000, 6600))),
+        sometimes(iaa.WithBrightnessChannels(iaa.Add((-30, 30))))
+    ]
+)
+
+def augment(images, labels):
+    img_dtype = images.dtype
+    img_shape = tf.shape(images)
+    images = tf.numpy_function(seq.augment_images,
+                                [tf.cast(images, np.uint8)],
+                                np.uint8)
+    images = tf.cast(images, img_dtype)
+    images = tf.reshape(images, shape = img_shape)
+    return images, labels
+
+
 # Iterate over all parameters
 
-for model_name in Models.getList():
+for model_name in [Models.getList()[3]]:
 
     # Load Dataset
 
@@ -174,6 +219,8 @@ for model_name in Models.getList():
         follow_links=False,
         crop_to_aspect_ratio=False
     )
+
+    train_ds = train_ds.map(augment)
 
     val_ds = balanced_image_dataset_from_directory(
         train_path,

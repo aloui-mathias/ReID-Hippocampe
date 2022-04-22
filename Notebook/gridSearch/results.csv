@@ -1,4 +1,0 @@
-model_name,dropout,triplet_distance,eval_distance,CMC@k,mAP@k
-EfficientNetB0,0.1,L2,l2,"[-1, -1, -1, -1, -1]","[-1, -1, -1, -1, -1]"
-EfficientNetB0,0.1,L2,euclidean,"[-1, -1, -1, -1, -1]","[-1, -1, -1, -1, -1]"
-EfficientNetB0,0.1,L2,cosine,"[-1, -1, -1, -1, -1]","[-1, -1, -1, -1, -1]"
