@@ -1,3 +1,5 @@
+import imgaug as ia
+from imgaug import augmenters as iaa 
 from kerasgen.balanced_image_dataset import balanced_image_dataset_from_directory
 from matplotlib import pyplot as plt
 from models import Models
@@ -22,7 +24,7 @@ from tqdm import tqdm
 # Fix imgaug color change
 
 
-filepath = "D:\\Programmes\\anaconda\\envs\\pipeline\\Lib\\site-packages\\imgaug\\augmenters\\color.py"
+filepath = "/home/data/.conda/envs/pipeline/lib/python3.8/site-packages/imgaug/augmenters/color.py"
 
 with open(filepath, 'r') as file:
     filedata = file.read()
@@ -37,9 +39,9 @@ with open(filepath, 'w') as file:
 # Set the fix variables between models
 
 EMBEDDING_SIZE = 128
-NUM_CLASSES_PER_BATCH = 15
+NUM_CLASSES_PER_BATCH = 3
 NUM_IMAGES_PER_CLASSE = 10
-DATASET_PATH = "D:\CEFE\indiv"
+DATASET_PATH = "/home/data/indiv"
 
 
 # Function to train and evaluate a model
@@ -65,23 +67,41 @@ def train(premodel, dropout, triplet_distance, train_ds, val_ds, path):
 
     model.compile(
         optimizer=tf.keras.optimizers.Adam(),
-        loss=tfa.losses.TripletSemiHardLoss()
+        loss=tfa.losses.TripletSemiHardLoss(distance_metric=triplet_distance)
     )
 
-    es = keras.callbacks.EarlyStopping(
-        monitor='val_loss', mode='min', verbose=1, patience=10)
+    # Define the LR schedule constants
+    start_lr = 0.00001
+    min_lr = 0.00001
+    max_lr = 0.00005
+    rampup_epochs = 50
+    sustain_epochs = 0
+    exp_decay = .8
 
-    mc = keras.callbacks.ModelCheckpoint(
-        join(path, 'best_model.h5'),
-        monitor='val_loss',
-        mode='min',
-        save_best_only=True
+    # Define the LR schedule as a callback
+    def lrfn(epoch):
+        def lr(epoch, start_lr, min_lr, max_lr, rampup_epochs, sustain_epochs, exp_decay):
+            if epoch < rampup_epochs:
+                lr = (max_lr - start_lr)/rampup_epochs * epoch + start_lr
+            elif epoch < rampup_epochs + sustain_epochs:
+                lr = max_lr
+            else:
+                lr = (max_lr - min_lr) * exp_decay**(epoch-rampup_epochs-sustain_epochs) + min_lr
+            return lr
+        return lr(epoch, start_lr, min_lr, max_lr, rampup_epochs, sustain_epochs, exp_decay)
+        
+    lr_callback = tf.keras.callbacks.LearningRateScheduler(lambda epoch: lrfn(epoch), verbose=True)
+
+    # Define a `EarlyStopping` callback so that our model does overfit 
+    es = tf.keras.callbacks.EarlyStopping(
+        monitor='val_loss', patience=10, verbose=2, mode='auto',
+        restore_best_weights=True
     )
 
     history = model.fit(train_ds,
                         validation_data=val_ds,
-                        epochs=100,
-                        callbacks=[es, mc])
+                        epochs=150,
+                        callbacks=[lr_callback, es])
 
     return model, history
 
@@ -99,19 +119,22 @@ def eval(model, eval_disance, test_path):
     for indiv in listdir(test_path):
         for pic_name in listdir(join(test_path, indiv)):
             img = Image.open(join(test_path, indiv, pic_name))
-            img = np.array(img)
+            img = np.array(img).reshape((1,model.input_shape[1],model.input_shape[2],3))
             x.append(model.predict(img))
             y.append(indiv)
-    neighbors = NearestNeighbors(n_neighbors=5,
+    x = np.array(x)
+    x = x.reshape((x.shape[0], x.shape[2]))
+    y = np.array(y)
+    nneighbors = NearestNeighbors(n_neighbors=6,
                                  metric=eval_disance)
-    neighbors.fit(x, y)
+    nneighbors.fit(x, y)
     sum_cmcks = np.zeros(shape=(5))
     sum_APks = np.zeros(shape=(5))
     for label in tqdm(np.unique(y)):
         indices = np.where(y == label)[0]
         x_label = x[indices]
         neighbors = np.array(
-            neighbors.kneighbors(x_label))
+            nneighbors.kneighbors(x_label))[:,1:]
         neighbors_labels = y[
             neighbors[1, :, :].astype(int)]
         cmcks = []
@@ -188,6 +211,48 @@ else:
     results = pd.read_csv("results.csv")
 
 
+# Augmentations
+
+
+sometimes = lambda aug: iaa.Sometimes(0.5, aug)
+
+class MyParameter(ia.parameters.StochasticParameter):
+    
+    def __init__(self, lb, ub, mid):
+        self.lb = lb
+        self.ub = ub
+        self.mid = mid
+
+    def _draw_samples(self, size, random_state):
+        samples = []
+        for i in range(size[0]):
+            if np.random.random() < 0.5:
+                samples.append(np.random.uniform(self.lb, self.mid))
+            else:
+                samples.append(np.random.uniform(self.mid, self.ub))
+        return np.array(samples).reshape(size)
+
+seq = iaa.Sequential(
+    [
+        sometimes(iaa.Salt((0.001, 0.05))),
+        iaa.Rotate((-180,180)),
+        sometimes(iaa.AverageBlur(k=(2,3))),
+        sometimes(iaa.ChangeColorTemperature(MyParameter(4000, 20000, 6600))),
+        sometimes(iaa.WithBrightnessChannels(iaa.Add((-30, 30))))
+    ]
+)
+
+def augment(images, labels):
+    img_dtype = images.dtype
+    img_shape = tf.shape(images)
+    images = tf.numpy_function(seq.augment_images,
+                                [tf.cast(images, np.uint8)],
+                                np.uint8)
+    images = tf.cast(images, img_dtype)
+    images = tf.reshape(images, shape = img_shape)
+    return images, labels
+
+
 # Iterate over all parameters
 
 for model_name in Models.getList():
@@ -220,6 +285,8 @@ for model_name in Models.getList():
         follow_links=False,
         crop_to_aspect_ratio=False
     )
+
+    train_ds = train_ds.map(augment)
 
     val_ds = balanced_image_dataset_from_directory(
         train_path,
@@ -261,6 +328,3 @@ for model_name in Models.getList():
                 )
                 results = pd.concat([results, result])
                 results.to_csv("results.csv", index=False)
-            break
-        break
-    break
