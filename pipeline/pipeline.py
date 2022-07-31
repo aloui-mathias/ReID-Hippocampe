@@ -1,7 +1,7 @@
 from functions import cleanTempFolder, copyImageToTempFolder, imageToCropPath
 from numpy import log10
-from profil.classification import main as profil
-from ReID.reid import main as reid
+from profil.classification import model as profil
+from ReID.reid import model as reid
 from yolo.detect import main as detect
 from yolo.detect import parse_opt
 
@@ -21,9 +21,13 @@ def main(img_path: str = "D:/CEFE/Dataset/BF001/" +
 
     crop_path = imageToCropPath(opt.source)
 
-    profil_score = profil([crop_path])[0]
+    profil_model = profil()
 
-    reid_score = reid([crop_path])[0]
+    profil_score = profil_model.predict([crop_path])[0]
+
+    reid_model = reid()
+
+    reid_score = reid_model.predict([crop_path])[0]
 
     with open("pipeline.result.txt", "w") as file:
 

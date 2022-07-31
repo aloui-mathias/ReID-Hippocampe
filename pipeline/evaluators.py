@@ -8,7 +8,7 @@ class evaluator:
     def __init__(self, nb: int = 10) -> None:
         self.nb = nb
         self.neighbors = NearestNeighbors(n_neighbors=nb,
-                                          metric='euclidean')
+                                          metric='cosine')
 
     def fit(self, x: np.ndarray, y: np.ndarray) -> None:
         self.x = x
